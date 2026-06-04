@@ -335,13 +335,71 @@ bool ExportMidi::write(QIODevice* device, bool midiExpandRepeats, bool exportRPN
                                     continue;
 
                               if (event.type() == ME_NOTEON) {
-                                    // use the note values instead of the event values if portamento is suppressed
-                                    if (!exportRPNs && event.portamento())
-                                          track.insert(pauseMap.addPauseTicks(i->first), MidiEvent(ME_NOTEON, channel,
-                                                event.note()->pitch(), event.velo()));
-                                    else
-                                          track.insert(pauseMap.addPauseTicks(i->first), MidiEvent(ME_NOTEON, channel,
-                                                event.pitch(), event.velo()));
+
+      int tick = pauseMap.addPauseTicks(i->first);
+
+      // MPE note-on
+      if (_exportMPE && event.velo() > 0) {
+
+            float cents = event.tuning();
+
+            int value = int(
+                  8192.0 +
+                  (cents / 4800.0) * 8192.0
+            );
+
+            if (value < 0)
+                  value = 0;
+
+            if (value > 16383)
+                  value = 16383;
+
+            int lsb = value & 0x7F;
+            int msb = (value >> 7) & 0x7F;
+
+            track.insert(
+                  tick,
+                  MidiEvent(ME_PITCHBEND,
+                        channel,
+                        lsb,
+                        msb)
+            );
+      }
+
+      if (!exportRPNs && event.portamento())
+            track.insert(
+                  tick,
+                  MidiEvent(
+                        ME_NOTEON,
+                        channel,
+                        event.note()->pitch(),
+                        event.velo()
+                  )
+            );
+      else
+            track.insert(
+                  tick,
+                  MidiEvent(
+                        ME_NOTEON,
+                        channel,
+                        event.pitch(),
+                        event.velo()
+                  )
+            );
+
+      // MPE note-off reset
+      if (_exportMPE && event.velo() == 0) {
+            track.insert(
+                  tick,
+                  MidiEvent(
+                        ME_PITCHBEND,
+                        channel,
+                        0,
+                        64
+                  )
+            );
+      }
+}
                                     }
                               else if (event.type() == ME_CONTROLLER) {
                                     track.insert(pauseMap.addPauseTicks(i->first), MidiEvent(ME_CONTROLLER, channel,

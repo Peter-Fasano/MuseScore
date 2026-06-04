@@ -372,6 +372,12 @@ bool MidiFile::write(QIODevice* f)
 void MidiFile::writeEvent(const MidiEvent& event)
       {
       switch (event.type()) {
+            case MidiEventType::PITCHBEND:
+                  writeStatus(event.type(), event.channel());
+                  put(event.dataA() & 0x7f);
+                  put(event.dataB() & 0x7f);
+                  break;
+            
             case MidiEventType::NOTEON:
                   writeStatus(event.type(), event.channel());
                   put(event.dataA() & 0x7f);

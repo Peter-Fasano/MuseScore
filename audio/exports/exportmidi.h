@@ -28,6 +28,9 @@ class SynthesizerState;
 class ExportMidi {
       QFile f;
       Score* cs;
+      bool _exportMPE = false;
+      void setExportMPE(bool v) { _exportMPE = v; }
+      bool exportMPE() const { return _exportMPE; }
 
       //---------------------------------------------------
       //   PauseMap

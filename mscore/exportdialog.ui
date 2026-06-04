@@ -652,6 +652,11 @@
           </item>
          </layout>
         </widget>
+<widget class="QCheckBox" name="exportMPE">
+ <property name="text">
+  <string>Export MPE tuning</string>
+ </property>
+</widget>
         <widget class="QWidget" name="midiPage">
          <layout class="QGridLayout" name="gridLayout_5">
           <item row="1" column="0">
